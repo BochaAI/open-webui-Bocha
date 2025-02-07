@@ -90,7 +90,7 @@ If you want to change the search engine, let's change it to Bocha as an example.
 1. Navigate to Admin Panel -> Settings -> Web Search
 2. Toggle Enable Web Search
 3. Set Web Search Engine from dropdown menu to Bocha
-4. Fill Bocha Search API Key with the API key
+4. Fill [Bocha Search API Key](https://open.bochaai.com/) with the API key
 5. Click Save
 <img src="./pictures/webser_change2.png" width="600" />
 <img src="./pictures/webser_change3.png" width="600" />
