@@ -5,12 +5,10 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
 
 dayjs.extend(relativeTime);
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
-dayjs.extend(localizedFormat);
 
 import { WEBUI_BASE_URL } from '$lib/constants';
 import { TTS_RESPONSE_SPLIT } from '$lib/types';
@@ -297,11 +295,11 @@ export const formatDate = (inputDate) => {
 	const now = dayjs();
 
 	if (date.isToday()) {
-		return `Today at ${date.format('LT')}`;
+		return `Today at ${date.format('HH:mm')}`;
 	} else if (date.isYesterday()) {
-		return `Yesterday at ${date.format('LT')}`;
+		return `Yesterday at ${date.format('HH:mm')}`;
 	} else {
-		return `${date.format('L')} at ${date.format('LT')}`;
+		return `${date.format('DD/MM/YYYY')} at ${date.format('HH:mm')}`;
 	}
 };
 
@@ -668,15 +666,8 @@ export const cleanText = (content: string) => {
 	return removeFormattings(removeEmojis(content.trim()));
 };
 
-export const removeDetails = (content, types) => {
-	for (const type of types) {
-		content = content.replace(
-			new RegExp(`<details\\s+type="${type}"[^>]*>.*?<\\/details>`, 'gis'),
-			''
-		);
-	}
-
-	return content;
+export const removeDetailsWithReasoning = (content) => {
+	return content.replace(/<details\s+type="reasoning"[^>]*>.*?<\/details>/gis, '').trim();
 };
 
 // This regular expression matches code blocks marked by triple backticks
@@ -748,7 +739,7 @@ export const extractSentencesForAudio = (text: string) => {
 };
 
 export const getMessageContentParts = (content: string, split_on: string = 'punctuation') => {
-	content = removeDetails(content, ['reasoning', 'code_interpreter']);
+	content = removeDetailsWithReasoning(content);
 	const messageContentParts: string[] = [];
 
 	switch (split_on) {
@@ -771,19 +762,6 @@ export const blobToFile = (blob, fileName) => {
 	// Create a new File object from the Blob
 	const file = new File([blob], fileName, { type: blob.type });
 	return file;
-};
-
-export const getPromptVariables = (user_name, user_location) => {
-	return {
-		'{{USER_NAME}}': user_name,
-		'{{USER_LOCATION}}': user_location || 'Unknown',
-		'{{CURRENT_DATETIME}}': getCurrentDateTime(),
-		'{{CURRENT_DATE}}': getFormattedDate(),
-		'{{CURRENT_TIME}}': getFormattedTime(),
-		'{{CURRENT_WEEKDAY}}': getWeekday(),
-		'{{CURRENT_TIMEZONE}}': getUserTimezone(),
-		'{{USER_LANGUAGE}}': localStorage.getItem('locale') || 'en-US'
-	};
 };
 
 /**

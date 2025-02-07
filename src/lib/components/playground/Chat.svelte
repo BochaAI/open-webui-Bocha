@@ -33,7 +33,6 @@
 	let loading = false;
 	let stopResponseFlag = false;
 
-	let systemTextareaElement: HTMLTextAreaElement;
 	let messagesContainerElement: HTMLDivElement;
 
 	let showSystem = false;
@@ -59,29 +58,8 @@
 		console.log('stopResponse');
 	};
 
-	const resizeSystemTextarea = async () => {
-		await tick();
-		if (systemTextareaElement) {
-			systemTextareaElement.style.height = '';
-			systemTextareaElement.style.height = Math.min(systemTextareaElement.scrollHeight, 555) + 'px';
-		}
-	};
-
-	$: if (showSystem) {
-		resizeSystemTextarea();
-	}
-
 	const chatCompletionHandler = async () => {
-		if (selectedModelId === '') {
-			toast.error($i18n.t('Please select a model.'));
-			return;
-		}
-
 		const model = $models.find((model) => model.id === selectedModelId);
-		if (!model) {
-			selectedModelId = '';
-			return;
-		}
 
 		const [res, controller] = await chatCompletion(
 			localStorage.token,
@@ -280,13 +258,10 @@
 					<div slot="content">
 						<div class="pt-1 px-1.5">
 							<textarea
-								bind:this={systemTextareaElement}
+								id="system-textarea"
 								class="w-full h-full bg-transparent resize-none outline-none text-sm"
 								bind:value={system}
 								placeholder={$i18n.t("You're a helpful assistant.")}
-								on:input={() => {
-									resizeSystemTextarea();
-								}}
 								rows="4"
 							/>
 						</div>

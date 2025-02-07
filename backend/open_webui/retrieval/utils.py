@@ -15,13 +15,8 @@ from langchain_core.documents import Document
 from open_webui.config import VECTOR_DB
 from open_webui.retrieval.vector.connector import VECTOR_DB_CLIENT
 from open_webui.utils.misc import get_last_user_message
-from open_webui.models.users import UserModel
 
-from open_webui.env import (
-    SRC_LOG_LEVELS,
-    OFFLINE_MODE,
-    ENABLE_FORWARD_USER_INFO_HEADERS,
-)
+from open_webui.env import SRC_LOG_LEVELS, OFFLINE_MODE
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
@@ -66,7 +61,9 @@ class VectorSearchRetriever(BaseRetriever):
 
 
 def query_doc(
-    collection_name: str, query_embedding: list[float], k: int, user: UserModel = None
+    collection_name: str,
+    query_embedding: list[float],
+    k: int,
 ):
     try:
         result = VECTOR_DB_CLIENT.search(
@@ -262,31 +259,26 @@ def get_embedding_function(
     embedding_batch_size,
 ):
     if embedding_engine == "":
-        return lambda query, user=None: embedding_function.encode(query).tolist()
+        return lambda query: embedding_function.encode(query).tolist()
     elif embedding_engine in ["ollama", "openai"]:
-        func = lambda query, user=None: generate_embeddings(
+        func = lambda query: generate_embeddings(
             engine=embedding_engine,
             model=embedding_model,
             text=query,
             url=url,
             key=key,
-            user=user,
         )
 
-        def generate_multiple(query, user, func):
+        def generate_multiple(query, func):
             if isinstance(query, list):
                 embeddings = []
                 for i in range(0, len(query), embedding_batch_size):
-                    embeddings.extend(
-                        func(query[i : i + embedding_batch_size], user=user)
-                    )
+                    embeddings.extend(func(query[i : i + embedding_batch_size]))
                 return embeddings
             else:
-                return func(query, user)
+                return func(query)
 
-        return lambda query, user=None: generate_multiple(query, user, func)
-    else:
-        raise ValueError(f"Unknown embedding engine: {embedding_engine}")
+        return lambda query: generate_multiple(query, func)
 
 
 def get_sources_from_files(
@@ -431,11 +423,7 @@ def get_model_path(model: str, update_model: bool = False):
 
 
 def generate_openai_batch_embeddings(
-    model: str,
-    texts: list[str],
-    url: str = "https://api.openai.com/v1",
-    key: str = "",
-    user: UserModel = None,
+    model: str, texts: list[str], url: str = "https://api.openai.com/v1", key: str = ""
 ) -> Optional[list[list[float]]]:
     try:
         r = requests.post(
@@ -443,16 +431,6 @@ def generate_openai_batch_embeddings(
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {key}",
-                **(
-                    {
-                        "X-OpenWebUI-User-Name": user.name,
-                        "X-OpenWebUI-User-Id": user.id,
-                        "X-OpenWebUI-User-Email": user.email,
-                        "X-OpenWebUI-User-Role": user.role,
-                    }
-                    if ENABLE_FORWARD_USER_INFO_HEADERS and user
-                    else {}
-                ),
             },
             json={"input": texts, "model": model},
         )
@@ -468,7 +446,7 @@ def generate_openai_batch_embeddings(
 
 
 def generate_ollama_batch_embeddings(
-    model: str, texts: list[str], url: str, key: str = "", user: UserModel = None
+    model: str, texts: list[str], url: str, key: str = ""
 ) -> Optional[list[list[float]]]:
     try:
         r = requests.post(
@@ -476,16 +454,6 @@ def generate_ollama_batch_embeddings(
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {key}",
-                **(
-                    {
-                        "X-OpenWebUI-User-Name": user.name,
-                        "X-OpenWebUI-User-Id": user.id,
-                        "X-OpenWebUI-User-Email": user.email,
-                        "X-OpenWebUI-User-Role": user.role,
-                    }
-                    if ENABLE_FORWARD_USER_INFO_HEADERS
-                    else {}
-                ),
             },
             json={"input": texts, "model": model},
         )
@@ -504,29 +472,22 @@ def generate_ollama_batch_embeddings(
 def generate_embeddings(engine: str, model: str, text: Union[str, list[str]], **kwargs):
     url = kwargs.get("url", "")
     key = kwargs.get("key", "")
-    user = kwargs.get("user")
 
     if engine == "ollama":
         if isinstance(text, list):
             embeddings = generate_ollama_batch_embeddings(
-                **{"model": model, "texts": text, "url": url, "key": key, "user": user}
+                **{"model": model, "texts": text, "url": url, "key": key}
             )
         else:
             embeddings = generate_ollama_batch_embeddings(
-                **{
-                    "model": model,
-                    "texts": [text],
-                    "url": url,
-                    "key": key,
-                    "user": user,
-                }
+                **{"model": model, "texts": [text], "url": url, "key": key}
             )
         return embeddings[0] if isinstance(text, str) else embeddings
     elif engine == "openai":
         if isinstance(text, list):
-            embeddings = generate_openai_batch_embeddings(model, text, url, key, user)
+            embeddings = generate_openai_batch_embeddings(model, text, url, key)
         else:
-            embeddings = generate_openai_batch_embeddings(model, [text], url, key, user)
+            embeddings = generate_openai_batch_embeddings(model, [text], url, key)
 
         return embeddings[0] if isinstance(text, str) else embeddings
 

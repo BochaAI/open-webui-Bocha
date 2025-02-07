@@ -118,8 +118,7 @@
 				'displayemoji',
 				'save',
 				'interfaceoptions',
-				'interfacecustomization',
-				'alwaysonwebsearch'
+				'interfacecustomization'
 			]
 		},
 		{

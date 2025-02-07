@@ -18,6 +18,7 @@
 		'brave',
 		'kagi',
 		'mojeek',
+		'bocha',
 		'serpstack',
 		'serper',
 		'serply',
@@ -25,8 +26,7 @@
 		'duckduckgo',
 		'tavily',
 		'jina',
-		'bing',
-		'exa'
+		'bing'
 	];
 
 	let youtubeLanguage = 'en';
@@ -179,6 +179,17 @@
 									bind:value={webConfig.search.mojeek_search_api_key}
 								/>
 							</div>
+						{:else if webConfig.search.engine === 'bocha'}
+							<div>
+								<div class=" self-center text-xs font-medium mb-1">
+									{$i18n.t('Bocha Search API Key')}
+								</div>
+
+								<SensitiveInput
+									placeholder={$i18n.t('Enter Bocha Search API Key')}
+									bind:value={webConfig.search.bocha_search_api_key}
+								/>
+							</div>
 						{:else if webConfig.search.engine === 'serpstack'}
 							<div>
 								<div class=" self-center text-xs font-medium mb-1">
@@ -260,17 +271,6 @@
 								<SensitiveInput
 									placeholder={$i18n.t('Enter Jina API Key')}
 									bind:value={webConfig.search.jina_api_key}
-								/>
-							</div>
-						{:else if webConfig.search.engine === 'exa'}
-							<div>
-								<div class=" self-center text-xs font-medium mb-1">
-									{$i18n.t('Exa API Key')}
-								</div>
-
-								<SensitiveInput
-									placeholder={$i18n.t('Enter Exa API Key')}
-									bind:value={webConfig.search.exa_api_key}
 								/>
 							</div>
 						{:else if webConfig.search.engine === 'bing'}

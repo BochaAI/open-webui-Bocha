@@ -35,7 +35,7 @@ from open_webui.config import (
     AppConfig,
 )
 from open_webui.constants import ERROR_MESSAGES, WEBHOOK_MESSAGES
-from open_webui.env import WEBUI_AUTH_COOKIE_SAME_SITE, WEBUI_AUTH_COOKIE_SECURE
+from open_webui.env import WEBUI_SESSION_COOKIE_SAME_SITE, WEBUI_SESSION_COOKIE_SECURE
 from open_webui.utils.misc import parse_duration
 from open_webui.utils.auth import get_password_hash, create_token
 from open_webui.utils.webhook import post_webhook
@@ -82,8 +82,7 @@ class OAuthManager:
             oauth_allowed_roles = auth_manager_config.OAUTH_ALLOWED_ROLES
             oauth_admin_roles = auth_manager_config.OAUTH_ADMIN_ROLES
             oauth_roles = None
-            # Default/fallback role if no matching roles are found
-            role = auth_manager_config.DEFAULT_USER_ROLE
+            role = "pending"  # Default/fallback role if no matching roles are found
 
             # Next block extracts the roles from the user data, accepting nested claims of any depth
             if oauth_claim and oauth_allowed_roles and oauth_admin_roles:
@@ -274,15 +273,10 @@ class OAuthManager:
                         log.error(
                             f"Error downloading profile image '{picture_url}': {e}"
                         )
-                        picture_url = "/user.png"
+                        picture_url = ""
                 if not picture_url:
                     picture_url = "/user.png"
-
                 username_claim = auth_manager_config.OAUTH_USERNAME_CLAIM
-
-                name = user_data.get(username_claim)
-                if not isinstance(user, str):
-                    name = email
 
                 role = self.get_user_role(None, user_data)
 
@@ -291,7 +285,7 @@ class OAuthManager:
                     password=get_password_hash(
                         str(uuid.uuid4())
                     ),  # Random password, not used
-                    name=name,
+                    name=user_data.get(username_claim, "User"),
                     profile_image_url=picture_url,
                     role=role,
                     oauth_sub=provider_sub,
@@ -329,8 +323,8 @@ class OAuthManager:
             key="token",
             value=jwt_token,
             httponly=True,  # Ensures the cookie is not accessible via JavaScript
-            samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
-            secure=WEBUI_AUTH_COOKIE_SECURE,
+            samesite=WEBUI_SESSION_COOKIE_SAME_SITE,
+            secure=WEBUI_SESSION_COOKIE_SECURE,
         )
 
         if ENABLE_OAUTH_SIGNUP.value:
@@ -339,8 +333,8 @@ class OAuthManager:
                 key="oauth_id_token",
                 value=oauth_id_token,
                 httponly=True,
-                samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
-                secure=WEBUI_AUTH_COOKIE_SECURE,
+                samesite=WEBUI_SESSION_COOKIE_SAME_SITE,
+                secure=WEBUI_SESSION_COOKIE_SECURE,
             )
         # Redirect back to the frontend with the JWT token
         redirect_url = f"{request.base_url}auth#token={jwt_token}"

@@ -78,7 +78,6 @@
 				{rateMessage}
 				{actionMessage}
 				{submitMessage}
-				{deleteMessage}
 				{continueResponse}
 				{regenerateResponse}
 				{addMessages}
@@ -96,7 +95,6 @@
 				{rateMessage}
 				{actionMessage}
 				{submitMessage}
-				{deleteMessage}
 				{continueResponse}
 				{regenerateResponse}
 				{mergeResponses}

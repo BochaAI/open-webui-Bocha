@@ -7,11 +7,9 @@
 	import { updateUserById } from '$lib/apis/users';
 
 	import Modal from '$lib/components/common/Modal.svelte';
-	import localizedFormat from 'dayjs/plugin/localizedFormat';
 
 	const i18n = getContext('i18n');
 	const dispatch = createEventDispatcher();
-	dayjs.extend(localizedFormat);
 
 	export let show = false;
 	export let selectedUser;
@@ -89,7 +87,7 @@
 
 							<div class="text-xs text-gray-500">
 								{$i18n.t('Created at')}
-								{dayjs(selectedUser.created_at * 1000).format('LL')}
+								{dayjs(selectedUser.created_at * 1000).format($i18n.t('MMMM DD, YYYY'))}
 							</div>
 						</div>
 					</div>
