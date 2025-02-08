@@ -34,8 +34,8 @@ Before proceeding, ensure you're using **Python 3.11** to avoid compatibility is
 1. :
 
    ```bash
-   git clone https://github.com/luckyman-yan/ollama_webui_with_bocha.git
-   cd ollama_webui_with_bocha/
+   git clone https://github.com/luckyman-yan/open-webui-Bocha.git
+   cd open-webui-Bocha/
    ```
 
 2. **Copying required .env file**:
