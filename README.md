@@ -34,7 +34,7 @@ Before proceeding, ensure you're using **Python 3.11** to avoid compatibility is
 1. :
 
    ```bash
-   git clone https://github.com/luckyman-yan/open-webui-Bocha.git
+   git clone https://github.com/BochaAI/open-webui-Bocha.git
    cd open-webui-Bocha/
    ```
 
